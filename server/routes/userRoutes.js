@@ -1,8 +1,8 @@
 const express = require('express');
 const Router = express.Router();
 
-const {register, login, displayUserDetails, updateUserDetails, logout, browseRestaurants,
-      searchRestaurant, browseProducts, placeOrder, getOrderHistory, getOrderDetails} = require('../controllers/userControllers.js');
+const {register, login, displayUserDetails, updateUserDetails, continueWithGoogle, addInfo,
+    placeOrder, getOrderHistory, getOrderDetails} = require('../controllers/userControllers.js');
 
 // MIDDLEWARES
 const {validateRegistration, validateLogin} = require('../middlewares/inputValidation.js');
@@ -13,6 +13,8 @@ const {authorize, isUser} = require('../middlewares/authorizationMiddleware.js')
 
 Router.post('/register', validateRegistration, emailUniquenessCheck, register); // /users/register 
 Router.post('/login', validateLogin, login);                                    // /users/login
+Router.get('/auth/google', continueWithGoogle);                                 // /users/continueWithGoogle
+Router.post('/addInfo', addInfo);                                               // /users/addInfo
 
 // Router.get('/logout', authorize, isUser, logout);
 
