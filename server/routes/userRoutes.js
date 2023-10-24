@@ -1,8 +1,10 @@
 const express = require('express');
 const Router = express.Router();
 
+const passport = require('../controllers/googleAuth.js');
+
 const {register, login, displayUserDetails, updateUserDetails, continueWithGoogle, addInfo,
-    placeOrder, getOrderHistory, getOrderDetails} = require('../controllers/userControllers.js');
+    placeOrder, getOrderHistory, getOrderDetails, displayObtainedInfo} = require('../controllers/userControllers.js');
 
 // MIDDLEWARES
 const {validateRegistration, validateLogin} = require('../middlewares/inputValidation.js');
@@ -11,25 +13,24 @@ const {authorize, isUser} = require('../middlewares/authorizationMiddleware.js')
 
 // -------------------------------------------------------------------------------------------------------------
 
-Router.post('/register', validateRegistration, emailUniquenessCheck, register); // /users/register 
-Router.post('/login', validateLogin, login);                                    // /users/login
-Router.get('/auth/google', continueWithGoogle);                                 // /users/continueWithGoogle
-Router.post('/addInfo', addInfo);                                               // /users/addInfo
+Router.post('/register', validateRegistration, emailUniquenessCheck, register); 
+Router.post('/login', validateLogin, login);                                    
 
-// Router.get('/logout', authorize, isUser, logout);
 
-Router.post('/placeOrder', authorize, isUser, placeOrder); //  
 
-Router.get('/user-details', authorize, isUser, displayUserDetails);             // /users/user-details
-Router.put('/update-user-details', authorize, isUser, updateUserDetails);       // /users/update-user-details
+Router.get('addInfo', displayObtainedInfo)
+Router.post('/addInfo', addInfo);                                               
 
-// Router.get('/home', authorize, isUser, browseRestaurants); // 
-// Router.get('/searchRestaurant', authorize, isUser, searchRestaurant); //
-// Router.get('/browseProducts', authorize, isUser, browseProducts); // 
+Router.post('/placeOrder', authorize, isUser, placeOrder);   
 
-Router.get('/orderHistory', authorize, isUser, getOrderHistory); // 
+Router.get('/user-details', authorize, isUser, displayUserDetails);             
+Router.put('/update-user-details', authorize, isUser, updateUserDetails);       
 
-Router.get('/orderDetails', authorize, isUser, getOrderDetails); // 
+
+
+Router.get('/orderHistory', authorize, isUser, getOrderHistory);  
+
+Router.get('/orderDetails', authorize, isUser, getOrderDetails);  
 
 
 

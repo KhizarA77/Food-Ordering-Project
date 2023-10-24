@@ -91,7 +91,7 @@ const login = async (req, res) => {
 
         const user = result.rows[0];
         connection.close();
-        if (user && !user.PASSWORD){
+        if (user && !user.PASSWORD) {
             return res.status(401).json({
                 'status': 'failed',
                 'message': 'Please continue with Google'
@@ -133,52 +133,19 @@ const login = async (req, res) => {
     }
 }
 
-
-const continueWithGoogle = async (req, res) => {
-    passport.use(
-        new GoogleStrategy(
-            {
-                clientID: process.env.OAuth_CLIENT_ID,
-                clientSecret: process.env.OAuth_SECRET,
-                callbackURL: "http://localhost:3001/users/user-details",
-            },
-            async (accessToken, refreshToken, profile, done) => {
-                const connection = await getConnection();
-                const email = profile.emails[0].value;
-                const name = profile.displayName;
-                const result = await connection.execute(
-                    `SELECT UserID, Role FROM USERS WHERE email=:email`,
-                    [email],
-                    { outFormat: oracledb.OUT_FORMAT_OBJECT }
-                );
-                const user = result.rows[0];
-                connection.close();
-                if (user) {
-                    // User already exists, generate token and send response
-                    const token = jwt.sign({ userId: user.UserID, role: user.ROLE }, secretKey, { expiresIn: '1h' });
-                    return res.status(200).json({
-                        'status':'success',
-                        'message':'User Logged In Successfully!',
-                        'token': token,
-                        'redirectUrl':'/'
-                    })
-                } else {
-                    // User does not exist, redirect to input phone number and address page
-                    return res.status(200).json({
-                        'status':'success',
-                        'message':'User Logged In Successfully!',
-                        'redirectUrl':'/users/add-info',
-                        'data':{
-                            'name':name,
-                            'email':email
-                        }
-                    })
-                }
-            }
-        )
-    );
-};
-
+const displayObtainedInfo = (req, res) => {
+    let { email, name } = req.query;
+    if (!email || !name) {
+        return res.status(400).json({
+            'status': 'error',
+            'message': 'Please provide an email and name'
+        })
+    }
+    return res.status(200).json({
+        'status': 'success',
+        'message': 'User Details Obtained Successfully!',
+    })
+}
 
 const addInfo = async (req, res) => {
     let { name, email, phonenumber, address } = req.body;
@@ -259,14 +226,14 @@ const updateUserDetails = async (req, res) => {
     let { fullname, oldpassword, newpassword, phonenumber, address } = req.body;
     try {
         const connection = await getConnection();
-        if (fullname) { 
+        if (fullname) {
             await connection.execute(
                 `UPDATE USERS SET fullName=:fullName WHERE UserID=:UserID`,
                 [fullname, userId],
                 { autoCommit: true }
             );
         }
-        if (newpassword && newpassword.length >= 6) { 
+        if (newpassword && newpassword.length >= 6) {
 
             const HashedNewPassword = await bcrypt.hash(newpassword, 10);
             const result = await connection.execute(
@@ -377,7 +344,7 @@ const browseRestaurants = async (req, res) => {
             'message': 'No Restaurant Found!'
         })
     }
-    catch(err) {
+    catch (err) {
         console.log(`Error from browseRestaurants function ${err}`);
         return res.status(500).json({
             'status': 'error',
@@ -460,7 +427,7 @@ const placeOrder = async (req, res) => {
             { userId, restaurantid, orderDate, orderStatus, total, orderId: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER } },
             { autoCommit: true }
         );
-        
+
         const orderId = insertResult.outBinds.orderId[0];
 
         for (let i = 0; i < products.length; i++) {
@@ -532,7 +499,7 @@ const getOrderHistory = async (req, res) => {
 }
 
 const getOrderDetails = async (req, res) => {
-    const {userId} = req.user;
+    const { userId } = req.user;
     const { orderid } = req.query;
     if (!orderid) {
         return res.status(400).json({
@@ -601,6 +568,6 @@ module.exports = {
     placeOrder,
     getOrderHistory,
     getOrderDetails,
-    continueWithGoogle,
-    addInfo
+    addInfo,
+    displayObtainedInfo,
 }
