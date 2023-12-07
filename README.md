@@ -59,7 +59,7 @@ Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) fo
 
 ## Authors
 
-- **[Your Name](https://github.com/yourusername)** - Initial Work
+- **Khizar Asad (https://github.com/KhizarA77)** - Initial Work
 
 ## License
 
