@@ -1,67 +1,66 @@
-# User Routes
 
-## ./users/register: POST
+# Full-Stack Food Ordering Web Application
 
-body should include: fullName, email, password, phoneNumber & address. Only status and message returned as response
+This project is a comprehensive full-stack web application designed for food ordering. It integrates the power of ReactJS, NodeJS, and OracleDB to offer a seamless and interactive user experience.
 
-## ./users/login: POST
+## Getting Started
 
-body should include: email, password. status, message, 'token' and 'redirectUrl' returned. USE TOKEN FOR USER/ADMIN Specific routes. token should be in authorization header when sent. Use redirectUrl to redirect user from login page to the url provided in response.
+These instructions will guide you in setting up the project on your local machine for development and testing purposes.
 
-## ./users/logout: GET
+### Prerequisites
 
-logout button only to show if user/admin is logged in. 'redirectUrl' will be returned to client to login page to redirect client
-INVALIDATE/REMOVE THE JWT FROM LOCAL STORAGE OR COOKIES UPON SENDING THIS REQUEST (CLIENT SIDE) 
+Before starting, ensure you have the following installed:
+- Node.js - Download and install from [Node.js](https://nodejs.org/)
 
-## ./users/user-details: GET
+### Installation
 
-details will be in body key name 'data'
-token missing = redirectUrl to login page
+Follow these steps to set up your development environment:
 
-## ./users/update-user-details: PUT
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/KhizarA77/Food-Ordering-Project.git
+   ```
 
-token missing = redirectUrl to login page
-Updates to be done one by one. meaning if phone number is to be updated the put request should include 'phoneNumber'.
-If password then 'oldpassword' 'newpassword'. for name use 'fullName'. 'address' for address
+2. **Install server dependencies:**
+   ```bash
+   cd server
+   npm install
+   ```
 
-LOGIN SAME FOR BOTH ADMIN AND USER
+3. **Install client dependencies:**
+   ```bash
+   cd client
+   npm install
+   ```
 
-## ./users/home: GET
+4. **Configure Database Connection:**
+   Edit the `connection.js` file in the server directory with your OracleDB credentials.
 
+5. **Start the Server:**
+   ```bash
+   cd server
+   npm run start
+   ```
 
+6. **Start the Client:**
+   In a new terminal window:
+   ```bash
+   cd client
+   npm start
+   ```
 
-# Admin Routes
+### Usage
 
-## ./admin/admin-dashboard: GET
+With both the server and client running, the application can be accessed at `http://localhost:3000`.
 
-returns user and restaurant tables json like:
-    'data': {
-         'users': userData,
-         'restaurants': restaurantData,
-    }
-    display in tables.
+## Contributing
 
-## ./admin/search-user: GET
+Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
-search by email or phone_number include either in json body
+## Authors
 
-## ./admin/search-restaurant: GET
+- **[Your Name](https://github.com/yourusername)** - Initial Work
 
-same as above
+## License
 
-## ./admin/add-restaurant: POST
-
-request body must include {email, password, restaurantName, address, phone_number, website}
-
-## ./admin/remove-user: DELETE
-
-include {UserID} in request body. recommended to search first and then delete.
-
-## ./admin/remove-restaurant: DELETE
-
-include {RestaurantID} in req body. recommended to search first then delete.
-
-# Restaurant Routes
-
-## ./restaurants/restaurantLogin: POST
-
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for more details.
