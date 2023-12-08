@@ -53,9 +53,6 @@ Follow these steps to set up your development environment:
 
 With both the server and client running, the application can be accessed at `http://localhost:3000`.
 
-## Contributing
-
-Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
 ## Authors
 
@@ -63,4 +60,4 @@ Contributions are welcome! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) fo
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for more details.
+This project is licensed under the MIT License
