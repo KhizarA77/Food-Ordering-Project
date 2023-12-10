@@ -14,7 +14,7 @@ import Typography from '@mui/material/Typography';
 import { useContext, useState } from "react";
 import Grid from '@mui/material/Unstable_Grid2';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import { Badge, Divider, Drawer } from "@mui/material";
+import { Badge, Divider, Drawer, Fab } from "@mui/material";
 import { CartContext } from "../pages/Home";
 import { styled } from '@mui/material/styles';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
@@ -75,6 +75,46 @@ function Navbar({ isTitleVisible }) {
     };
 
 
+    async function handleQtyInc(item) {
+        const res = await fetch(`http://192.168.18.139:3001/users/browseProducts?restaurantid=${item.resid}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        const data = await res.json();
+        const prod = data.data;
+        const selectedProd = prod.find((i) => i.PRODUCTID === item.productId)
+        const productPrice = selectedProd.PRICE;
+        const newProd = { productId: item.productId, resid: item.resid, name: item.name, quantity: item.quantity + 1, price: item.price + productPrice }
+        const newArr = cartItem.map((i) => i === item ? newProd : i)
+        setCartItems(newArr)
+    }
+
+    async function handleQtyDec(item) {
+        const res = await fetch(`http://192.168.18.139:3001/users/browseProducts?restaurantid=${item.resid}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        const data = await res.json();
+        const prod = data.data;
+        const selectedProd = prod.find((i) => i.PRODUCTID === item.productId)
+        const productPrice = selectedProd.PRICE;
+        if (item.quantity > 1) {
+            const newProd = { productId: item.productId, resid: item.resid, name: item.name, quantity: item.quantity - 1, price: item.price - productPrice }
+            const newArr = cartItem.map((i) => i === item ? newProd : i)
+            setCartItems(newArr)
+        } else {
+            if (cartItem.length === 1) {
+                setCartItems([])
+            } else {
+                const nnew = cartItem.filter((i) => i !== item);
+                setCartItems(nnew);
+            }
+        }
+    }
 
     function toggleDrawer(event) {
         if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
@@ -148,19 +188,23 @@ function Navbar({ isTitleVisible }) {
                         {cartItem.length === 0 ? <p>Cart is Empty</p> :
                             cartItem.map((item, i) => {
                                 return <Grid container width={'270px'} sx={{ backgroundColor: 'aliceblue' }} rowGap={1} padding={1} borderRadius={'10px'} fontSize={'0.95rem'}>
-                                    <Grid xs={2}>
+                                    <Grid xs={3}>
                                         <p>Qty</p>
                                     </Grid>
-                                    <Grid xs={8} sx={{ display: 'flex', justifyContent: 'center', }}>
+                                    <Grid xs={7} sx={{ display: 'flex', justifyContent: 'center', }}>
                                         <p>Name</p>
                                     </Grid>
                                     <Grid xs={2}>
                                         <p>Price</p>
                                     </Grid>
-                                    <Grid xs={2}>
-                                        <p>{item.quantity}</p>
+                                    <Grid xs={3}>
+                                        <div style={{ display: "flex", columnGap: '10px', alignItems: 'center' }}>
+                                            <Fab color="secondary" sx={{ width: '20px', height: '10px', fontSize: '25px' }} onClick={() => handleQtyDec(item)}>-</Fab>
+                                            <p>{item.quantity}</p>
+                                            <Fab color="secondary" sx={{ width: '20px', height: '10px', fontSize: '20px' }} onClick={() => handleQtyInc(item)}>+</Fab>
+                                        </div>
                                     </Grid>
-                                    <Grid xs={8} sx={{ display: 'flex', justifyContent: 'center', textAlign: 'center' }}>
+                                    <Grid xs={7} sx={{ display: 'flex', justifyContent: 'center', textAlign: 'center' }}>
                                         <p>{item.name}</p>
                                     </Grid>
                                     <Grid xs={2}>
@@ -251,7 +295,7 @@ function Navbar({ isTitleVisible }) {
                             >
 
                                 <MenuItem key='Account' onClick={handleCloseUserMenu}>
-                                    <Typography textAlign="center" onClick={() => navigate('users/dashboard')}>Account</Typography>
+                                    <Typography textAlign="center" onClick={() => navigate('users/dashboard', { replace: true })}>Account</Typography>
                                 </MenuItem>
                                 <MenuItem key='Logout' onClick={handleCloseUserMenu}>
                                     <Typography textAlign="center" onClick={() => handleLogout()}>Logout</Typography>

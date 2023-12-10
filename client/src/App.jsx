@@ -11,7 +11,7 @@ function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route index element={<Home />} />
+                <Route path="/" element={<Home />} />
                 <Route path="register" element={sessionStorage.getItem('authToken') !== null ? <Navigate to="/" /> : <Register />} />
                 <Route path="login" element={sessionStorage.getItem('authToken') !== null ? <Navigate to="/" /> : <Login />} />
                 <Route path="users/dashboard" element={sessionStorage.getItem('authToken') !== null ? <UserManagement /> : <Navigate to="/login" />} />
