@@ -258,51 +258,68 @@ const getOrderDetails = async (req, res) => {
 const changeOrderStatus = async (req, res) => {
     const { restaurantId } = req.restaurant;
     const { orderid } = req.body;
+
+    // Ensure restaurantId and orderid are provided
+    if (!restaurantId || !orderid) {
+        return res.status(400).json({
+            'status': 'error',
+            'message': 'Missing restaurantId or orderid'
+        });
+    }
+
     try {
         const connection = await getConnection();
-        let result = await connection.execute(
-            `SELECT OrderStatus FROM ORDERS WHERE restaurantId=:restaurantId AND orderId=:orderid AND OrderStatus = 'Processing' OR OrderStatus = 'In Progress'`,
-            [restaurantId, orderid],
-            { outFormat: oracledb.OUT_FORMAT_OBJECT }
+
+        // Declare a variable to hold the OUT parameter's value
+        let currStatus = { dir: oracledb.BIND_OUT, type: oracledb.STRING, maxSize: 20 };
+
+        // Execute the procedure
+        const result = await connection.execute(
+            `BEGIN
+                updateOrderAndRiderStatus(:restaurantId, :orderid, :currStatus);
+             END;`,
+            {
+                restaurantId: restaurantId,
+                orderid: orderid,
+                currStatus: currStatus
+            }
         );
-        if (result.rows.length === 0) {
+
+        // Retrieve the current status from the OUT parameter
+        let orderStatus = result.outBinds.currStatus;
+
+        if (orderStatus === 'NOT FOUND') {
             return res.status(404).json({
                 'status': 'error',
-                'message': 'Order can not be further updated'
-            })
+                'message': 'Order not found or cannot be further updated'
+            });
+        } else if (orderStatus === 'ERROR' || orderStatus === 'NO DATA FOUND') {
+            return res.status(500).json({
+                'status': 'error',
+                'message': 'An error occurred during the update process'
+            });
+        } else {
+            return res.status(200).json({
+                'status': 'success',
+                'message': `Order and Rider Status Updated Successfully to ${orderStatus}!`
+            });
         }
-        result = result.rows[0];
-        let currStatus = result.ORDERSTATUS;
-        if (currStatus === 'In Progress') {
-            await connection.execute(
-                `UPDATE ORDERS SET OrderStatus='Delivered' WHERE restaurantId=:restaurantId AND orderId=:orderId`,
-                [restaurantId, orderid],
-                { autoCommit: true }
-            );
-            currStatus = 'Delivered';
-        }
-        else if (currStatus === 'Processing') {
-            await connection.execute(
-                `UPDATE ORDERS SET OrderStatus='In Progress' WHERE restaurantId=:restaurantId AND orderId=:orderId`,
-                [restaurantId, orderid],
-                { autoCommit: true }
-            );
-            currStatus = 'In Progress';
-        }
-        connection.close();
-        return res.status(200).json({
-            'status': 'success',
-            'message': `Order Status Changed Successfully to ${currStatus}!`
-        })
     }
     catch (err) {
-        console.log(`Error from changeOrderStatus function ${err}`);
+        console.log(`Error from changeOrderStatus function: ${err}`);
         return res.status(500).json({
             'status': 'error',
-            'message': 'This is an issue from our end please try again later!'
-        })
+            'message': 'This is an issue from our end, please try again later!'
+        });
     }
-}
+    // finally {
+    //     // Ensure the connection is always closed
+    //     if (connection) {
+    //         await connection.close();
+    //     }
+    // }
+};
+
 
 
 

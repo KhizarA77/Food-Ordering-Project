@@ -270,6 +270,106 @@ const removeRestaurant = async (req, res) => {
     }
 }
 
+const addRider = async (req, res) => {
+    let { Name, phone_number } = req.body;
+    if (!Name || !phone_number) {
+        console.log(`Error from addRider function: Please fill all the fields!`);
+        return res.status(400).json({
+            'status': 'error',
+            'message': 'Please fill all the fields!'
+        })
+    }
+    try {
+        Name = Name.toUpperCase();
+        const STATUS = 'AVAILABLE';
+        const connection = await getConnection();
+        const result = await connection.execute(
+            `INSERT INTO RIDERS (Status, Name, phone_number) VALUES (:STATUS, :Name, :phone_number)`,
+            [STATUS, Name, phone_number],
+            { autoCommit: true }
+
+        );
+        connection.close();
+        return res.status(200).json({
+            'status': 'success',
+            'message': 'Rider Added Successfully!'
+        })
+
+    } catch (err) {
+        console.log(`Error from addRider function ${err}`);
+        return res.status(500).json({
+            'status': 'error',
+            'message': 'This is an issue from our end please try again later!'
+        })
+    }
+}
+
+const viewRiders = async (req, res) => {
+    try {
+        const connection = await getConnection();
+        const result = await connection.execute(
+            `SELECT RiderID, Name, Phone_Number FROM RIDERS`,
+            [],
+            { outFormat: oracledb.OUT_FORMAT_OBJECT }
+        );
+        connection.close();
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                'status': 'error',
+                'message': 'No Riders found'
+            })
+        }
+        return res.status(200).json({
+            'status': 'success',
+            'message': 'Riders Found',
+            'data': result.rows
+        })
+    } catch (err) {
+        console.log(`Error from viewRiders function ${err}`);
+        return res.status(500).json({
+            'status': 'error',
+            'message': 'This is an issue from our end please try again later!'
+        })
+
+    }
+
+}
+
+
+const removeRider = async (req, res) => {
+    const { riderid } = req.query;
+    if (!riderid) {
+        console.log(`Error from removeRider function: Please provide riderid!`);
+        return res.status(400).json({
+            'status': 'error',
+            'message': 'Please provide riderid!'
+        })
+    }
+    try {
+        const connection = await getConnection();
+        await connection.execute(
+            `DELETE FROM RIDERS WHERE RiderID=:riderid`,
+            [riderid],
+            { autoCommit: true }
+
+        );
+        connection.close();
+        return res.status(200).json({
+            'status': 'success',
+            'message': 'Rider Removed Successfully!'
+        })
+
+    } catch (err) {
+        console.log(`Error from removeRider function ${err}`);
+        return res.status(500).json({
+            'status': 'error',
+            'message': 'This is an issue from our end please try again later!'
+        })
+    }
+}
+
+
+
 // ------------------------------------------HELPER FUNCTIONS----------------------------------------------
 
 
@@ -328,5 +428,7 @@ module.exports = {
     addRestaurants,
     removeUser,
     removeRestaurant,
-
+    addRider,
+    viewRiders,
+    removeRider
 }

@@ -15,6 +15,10 @@ Router.delete('/remove-user', authorize, isAdmin, adminController.removeUser); /
 
 Router.delete('/restaurants', authorize, isAdmin, adminController.removeRestaurant); // /admin/restaurants PASS restaurantid in query
 
+Router.get('/riders', authorize, isAdmin, adminController.viewRiders);
 
+Router.post('/riders', authorize, isAdmin, adminController.addRider);
+
+Router.delete('/riders', authorize, isAdmin, adminController.removeRider);
 
 module.exports = Router;

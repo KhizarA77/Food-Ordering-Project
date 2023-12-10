@@ -337,68 +337,89 @@ const placeOrder = async (req, res) => {
     let total = 0;
     const { userId } = req.user;
     const { restaurantid, products } = req.body;
-    if (!restaurantid || !products) {
-        console.log(`Error from placeOrder function: Please provide a Restaurant ID and Products`);
+
+    if (!restaurantid || !products || products.length === 0) {
+        console.log(`Error from placeOrder function: Please provide a valid Restaurant ID and Products`);
         return res.status(400).json({
             'status': 'error',
-            'message': 'Please provide a Restaurant ID and Products'
-        })
+            'message': 'Please provide a valid Restaurant ID and Products'
+        });
     }
 
+    let connection;
+
     try {
-        const connection = await getConnection();
-        for (let i = 0; i < products.length; i++) {
-            const result = await connection.execute(
-                `SELECT price FROM RESTAURANTITEMS WHERE productId=:productId`,
-                [products[i].productId],
-                { outFormat: oracledb.OUT_FORMAT_OBJECT }
-            );
-            const price = result.rows[0].PRICE;
-            total += price * products[i].quantity;
-        }
+        connection = await getConnection();
+
+        // Fetch product prices in a single query
+        const productIds = products.map(p => p.productId);
+        const productQuery = `SELECT productId, price FROM RESTAURANTITEMS WHERE productId IN (${productIds.join(',')})`;
+        const productResults = await connection.execute(productQuery, [], { outFormat: oracledb.OUT_FORMAT_OBJECT });
+
+        const productPrices = productResults.rows.reduce((acc, row) => {
+            acc[row.PRODUCTID] = row.PRICE;
+            return acc;
+        }, {});
+
+        products.forEach(product => {
+            if (!productPrices[product.productId]) {
+                throw new Error(`Product ID ${product.productId} not found`);
+            }
+            total += productPrices[product.productId] * product.quantity;
+        });
+
         const orderStatus = 'Processing';
         const orderDate = formatDatetime(new Date());
-        const insertResult = await connection.execute(
-            `INSERT INTO ORDERS (UserID, RestaurantID, OrderTimeDate, OrderStatus, GRANDTOTAL) 
-             values (:userId, :restaurantid, TO_TIMESTAMP(:orderDate, 'YYYY-MM-DD HH24:MI:SS.FF3'), :orderStatus, :total)
-             RETURNING OrderID INTO :orderId`,
+
+        // Insert order
+        const insertOrderQuery = `
+            INSERT INTO ORDERS (UserID, RestaurantID, OrderTimeDate, OrderStatus, GRANDTOTAL) 
+            VALUES (:userId, :restaurantid, TO_TIMESTAMP(:orderDate, 'YYYY-MM-DD HH24:MI:SS.FF3'), :orderStatus, :total)
+            RETURNING OrderID INTO :orderId`;
+        const insertOrderResult = await connection.execute(
+            insertOrderQuery,
             { userId, restaurantid, orderDate, orderStatus, total, orderId: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER } },
-            { autoCommit: true }
+            { autoCommit: false }
         );
+        const orderId = insertOrderResult.outBinds.orderId[0];
 
-        const orderId = insertResult.outBinds.orderId[0];
-
-        for (let i = 0; i < products.length; i++) {
-            let subtotal = 0;
-            const result = await connection.execute(
-                `SELECT price FROM RESTAURANTITEMS WHERE productId=:productId`,
-                [products[i].productId],
-                { outFormat: oracledb.OUT_FORMAT_OBJECT }
-            );
-            const price = result.rows[0].PRICE;
-            subtotal += price * products[i].quantity;
+        // Insert order details
+        for (let product of products) {
+            const subtotal = productPrices[product.productId] * product.quantity;
+            const insertDetailQuery = `
+                INSERT INTO ORDER_DETAILS (OrderID, ProductID, Quantity, Subtotal) 
+                VALUES (:orderId, :productId, :quantity, :subtotal)`;
             await connection.execute(
-                `INSERT INTO ORDER_DETAILS (OrderID, ProductID, Quantity, Subtotal) values (:orderId, :productId, :quantity, :subtotal)`,
-                [orderId, products[i].productId, products[i].quantity, subtotal],
-                { autoCommit: true }
-            )
+                insertDetailQuery,
+                { orderId, productId: product.productId, quantity: product.quantity, subtotal },
+                { autoCommit: false }
+            );
         }
-        connection.close();
+
+        // Commit transaction
+        await connection.commit();
+
+        // Send response
         return res.status(200).json({
             'status': 'success',
             'message': 'Order Placed Successfully!',
             'orderId': orderId
         });
-    }
-    catch (err) {
+    } catch (err) {
+        if (connection) {
+            await connection.rollback();
+        }
         console.log(`Error from placeOrder function ${err}`);
         return res.status(500).json({
             'status': 'error',
             'message': 'This is an issue from our end please try again later!'
-        })
+        });
+    } finally {
+        if (connection) {
+            await connection.close();
+        }
     }
-
-}
+};
 
 const getOrderHistory = async (req, res) => {
     const { userId } = req.user;

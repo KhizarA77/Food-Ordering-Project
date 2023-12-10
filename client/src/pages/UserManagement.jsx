@@ -9,6 +9,7 @@ import ManageUsers from '../components/ManageUsers';
 import ManageRestaurants from '../components/ManageRestaurants';
 import Settings from '../components/Settings';
 import OrderHistory from '../components/OrderHistory';
+import ManageRiders from '../components/ManageRiders';
 function UserManagement() {
 
     const user = useSelector((state) => state.fetchUser.user);
@@ -19,7 +20,7 @@ function UserManagement() {
         const adValue = searchParams.get('ad');
 
         const UserTabValues = ['settings', 'order-history'];
-        const AdminTabValues = ['manage-users', 'manage-restaurants'];
+        const AdminTabValues = ['manage-users', 'manage-restaurants', 'manage-riders'];
 
         if (tabValue === null && adValue === null) {
             setSearchParams({ tab: 'settings' });
@@ -45,7 +46,7 @@ function UserManagement() {
 
             <Grid container>
                 <Grid xs={12} md={2}><Dashboard role={ROLE} setSearchParams={setSearchParams} searchParams={searchParams} /></Grid>
-                <Grid xs={12} md={10}>{tab === "settings" && <UserDetails><Settings role={ROLE} user={user} /></UserDetails>} {tab === 'order-history' && <OrderHistory />}  {ad === 'manage-users' && <ManageUsers role={ROLE} />}{ad === 'manage-restaurants' && <ManageRestaurants />}</Grid>
+                <Grid xs={12} md={10}>{tab === "settings" && <UserDetails><Settings role={ROLE} user={user} /></UserDetails>} {tab === 'order-history' && <OrderHistory />}  {ad === 'manage-users' && <ManageUsers role={ROLE} />}{ad === 'manage-restaurants' && <ManageRestaurants />}{ad === 'manage-riders' && <ManageRiders />}</Grid>
             </Grid>
         </div>
     )
