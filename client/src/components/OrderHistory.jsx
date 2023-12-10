@@ -170,12 +170,12 @@ function OrderHistory() {
                                         </Grid>
 
                                     </Zoom>
-                                    <Grid xs={12} display={'flex'} justifyContent={'center'}>
-                                        <Pagination page={page1} count={totalPages1} onChange={handlePageChange1} color="secondary" />
-                                    </Grid>
+
                                 </>)
                         )))}
-
+                        <Grid xs={12} display={'flex'} justifyContent={'center'}>
+                            <Pagination page={page1} count={totalPages1} onChange={handlePageChange1} color="secondary" />
+                        </Grid>
                         <Grid container xs={12}>
                             <Grid sm={12}>
                                 <h1>Past Orders ({completed.length})</h1>

@@ -45,9 +45,9 @@ function Dashboard(props) {
             <Button key='drawer23' sx={{ width: '100%', marginTop: '10px', height: '50px' }} color="secondary" startIcon={<HistoryIcon />} onClick={() => setSearchParams({ tab: 'order-history' })}>
                 Order History
             </Button>
-            <Button key='drawer32' sx={{ width: '100%', marginTop: '10px', height: '50px' }} color="secondary" startIcon={<LogoutIcon />} onClick={() => handleLogout()} >
+            {/* <Button key='drawer32' sx={{ width: '100%', marginTop: '10px', height: '50px' }} color="secondary" startIcon={<LogoutIcon />} onClick={() => handleLogout()} >
                 Logout
-            </Button>
+            </Button> */}
             {props.role === 'admin' && <>
                 <Divider sx={{ width: '100%', height: '30px' }} />
                 <p className={styles.admin}>Admin Controls</p>
@@ -104,9 +104,9 @@ function Dashboard(props) {
                         <Button key='drawer2' sx={{ width: '100%', marginTop: '10px', height: '50px' }} color="secondary" startIcon={<HistoryIcon />} onClick={() => setSearchParams({ tab: 'order-history' })}>
                             Order History
                         </Button>
-                        <Button key='drawer3' sx={{ width: '100%', marginTop: '10px', height: '50px' }} color="secondary" startIcon={<LogoutIcon />} onClick={() => handleLogout()} >
+                        {/* <Button key='drawer3' sx={{ width: '100%', marginTop: '10px', height: '50px' }} color="secondary" startIcon={<LogoutIcon />} onClick={() => handleLogout()} >
                             Logout
-                        </Button>
+                        </Button> */}
                         {props.role === 'admin' && <>
                             <Divider sx={{ width: '100%', height: '30px' }} />
                             <p className={styles.admin}>Admin Controls</p>
