@@ -199,9 +199,9 @@ function Navbar({ isTitleVisible }) {
                                     </Grid>
                                     <Grid xs={3}>
                                         <div style={{ display: "flex", columnGap: '10px', alignItems: 'center' }}>
-                                            <Fab color="secondary" sx={{ width: '20px', height: '10px', fontSize: '25px' }} onClick={() => handleQtyDec(item)}>-</Fab>
+                                            <Fab color="secondary" sx={{ width: '20px', height: '2px', fontSize: '25px' }} onClick={() => handleQtyDec(item)}>-</Fab>
                                             <p>{item.quantity}</p>
-                                            <Fab color="secondary" sx={{ width: '20px', height: '10px', fontSize: '20px' }} onClick={() => handleQtyInc(item)}>+</Fab>
+                                            <Fab color="secondary" sx={{ width: '20px', height: '2px', fontSize: '20px' }} onClick={() => handleQtyInc(item)}>+</Fab>
                                         </div>
                                     </Grid>
                                     <Grid xs={7} sx={{ display: 'flex', justifyContent: 'center', textAlign: 'center' }}>

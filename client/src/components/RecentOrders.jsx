@@ -15,36 +15,37 @@ function RecentOrders() {
     const [details, setDetails] = useState({});
     const [loading, setLoading] = useState(false);
     const [orderId, setOrderId] = useState(0)
-    useEffect(() => {
-        setLoading(true);
-        async function getHistory() {
-            const res = await fetch('http://192.168.18.139:3001/restaurants/orders', {
-                method: 'GET',
-                headers: {
-                    'Authorization': token,
-                    'Content-Type': 'application/json'
+
+    async function getHistory() {
+        const res = await fetch('http://192.168.18.139:3001/restaurants/orders', {
+            method: 'GET',
+            headers: {
+                'Authorization': token,
+                'Content-Type': 'application/json'
+            }
+        })
+        const data = await res.json();
+        console.log("recent orders: ", data.data)
+        if (data.status === 'success') {
+            setOrders(data.data);
+            data.data.filter((order) => {
+                if (order.ORDERSTATUS === 'In Progress') {
+                    return setColor((prev) => [...prev, '#81b214']);
+                }
+                if (order.ORDERSTATUS === 'Processing') {
+                    return setColor((prev) => [...prev, '#ff7a00']);
                 }
             })
-            const data = await res.json();
-            console.log("recent orders: ", data.data)
-            if (data.status === 'success') {
-                setOrders(data.data);
-                data.data.filter((order) => {
-                    if (order.ORDERSTATUS === 'In Progress') {
-                        return setColor((prev) => [...prev, '#81b214']);
-                    }
-                    if (order.ORDERSTATUS === 'Processing') {
-                        return setColor((prev) => [...prev, '#ff7a00']);
-                    }
-                })
-            }
-            if (data.status === 'error') {
-                setOrders([]);
-            }
-            setTimeout(() => {
-                setLoading(false);
-            }, 2000)
         }
+        if (data.status === 'error') {
+            setOrders([]);
+        }
+        setTimeout(() => {
+            setLoading(false);
+        }, 2000)
+    }
+    useEffect(() => {
+        setLoading(true);
         getHistory();
     }, [])
 
@@ -77,6 +78,10 @@ function RecentOrders() {
             })
         })
         const data = await res.json();
+        if (data.status === 'success') {
+            setOpen(false);
+            getHistory();
+        }
         console.log(data);
     }
     return (
